@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import re
 import json
-from openai import OpenAI
+import openai
 
 
 API_KEY = os.environ["API_KEY"]
