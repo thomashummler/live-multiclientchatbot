@@ -1,8 +1,8 @@
 import streamlit as st
 import openai
-
+import os
 # Assuming you have set up st.secrets correctly
-openai.api_key = st.secrets["openai_api_key"]
+openai.api_key = os.environ["API_KEY"]
 
 input = st.text_input("Ask a question")
 
