@@ -8,7 +8,7 @@ import numpy as np
 import re
 import json
 from openai import OpenAI
-import streamlit as st
+
 
 API_KEY = os.environ["API_KEY"]
 
