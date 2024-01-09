@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import re
 import json
-import openai as OpenAI
+import openai 
 
 
 API_KEY = os.environ["API_KEY"]
@@ -92,7 +92,7 @@ def filter_rieker_database(color, shoe_type, gender, season, material):
 
 
 
-client = OpenAI(
+client = openai(
     api_key= openai_api_key
 )
 if 'chatVerlauf_Information' not in st.session_state:
