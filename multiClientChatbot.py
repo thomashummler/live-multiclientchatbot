@@ -1,3 +1,7 @@
+from altair import JsonDataFormat
+import streamlit as st
+import random
+import time
 import os
 import pandas as pd
 import numpy as np
@@ -91,11 +95,13 @@ def filter_rieker_database(color, shoe_type, gender, season, material):
 client = OpenAI(
     api_key= openai_api_key
 )
-
-
-chatVerlauf_Information=[{
+if 'chatVerlauf_Information' not in st.session_state:
+    st.session_state.chatVerlauf_Information = []
+    st.session_state.chatVerlauf_Information=[{
     "role": "system",
-    "content":f"You try to recognize various information from the user and return it in json format. "
+    "content": f"You try to recognize various information from the user and return it in json format. "
+               f"You will get a {{jsondata}} json File. If it is None it doesent have to btoher"
+               f"This json Data File contains the Information you got out of the User Inputs in previous interactions"
                f"The following information should be recognized: Color, shoe type, gender, season, material, size, closure type. "
                f"The color must correspond to one of the following colors: schwarz, grau, braun, beige, weiß, rot, blau, "
                f"grün, gelb, gold, lila, mehrfarbig, rosa, bunt, metallisch, silber, orange. The shoe type must correspond "
@@ -108,30 +114,10 @@ chatVerlauf_Information=[{
                f"anything for the corresponding information. Then return a "" for the respective information and not null. The JSON format "
                f"should be: {{'Color': 'User Specified Color', 'Shoe Type': 'User Specified Shoe Type', "
                f"'Gender': 'User Specified Gender', 'Season': 'User Specified Season', "
-               f"'Material': 'User Specified Material'}} In the following interaction a interactions with the User some Filers may already be set. Recognize that they are set and just change them if u got new Informations from the User about this Filter"
-}]
+               f"'Material': 'User Specified Material'}} In the following interaction a interactions with the User some Filers may already be set. Recognize that some filters may already are set in {{jsondata}} and just change them if u got new Informations from the User about this Filters"
+    }]
 
-st.title("Einfache Chat-Anwendung")
 
-    # Chathistorie initialisieren, wenn nicht vorhanden
-if 'chat_history' not in st.session_state:
-        st.session_state['chat_history'] = []
-
-    # Chat-Nachrichteneingabefeld
-with st.form("chat_form"):
-        user_input = st.text_input("Schreiben Sie Ihre Nachricht:")
-        submit_button = st.form_submit_button("Senden")
-
-    # Nachricht zur Chathistorie hinzufügen
-if submit_button and user_input:
-    st.session_state['chat_history'].append(f"Sie: {user_input}")
-
-    # Chathistorie anzeigen
-for message in st.session_state['chat_history']:
-        st.text(message)
-        
-
-#While Schleife die laufend User Input entegen nimmt
 
 
 chatVerlauf_UserInteraction=[{
@@ -142,63 +128,77 @@ chat_User = client.chat.completions.create(
          model="gpt-4-1106-preview",
          messages=chatVerlauf_UserInteraction
         )
-antwort_Message = chat_User.choices[0].message.content
-
-
-st.session_state['chat_history'].append(f"Berater: {antwort_Message}")
+start_Message_System = chat_User.choices[0].message.content
 
 
 
-    # Nachricht zur Chathistorie hinzufügen
-if submit_button and user_input:
-    st.session_state['chat_history'].append(f"Sie: {user_input}")
 
-    chatVerlauf_Information.append({"role": "user", "content": user_input}),
+st.title("Chatbot 1")
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+    st.session_state.messages.append({"role": "assistant", "content": start_Message_System})
+
+# Display chat messages from history on app rerun
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+
+
+# Accept user input
+if prompt := st.chat_input("What is up?"):
+    # Add user message to chat history
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    # Display user message in chat message container
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    
+    # Display assistant response in chat message container
+    with st.chat_message("assistant"):
+        message_placeholder = st.empty()
+
+    user_input = prompt
+    st.session_state.chatVerlauf_Information.append({"role": "user", "content": user_input})
     chat_Filter = client.chat.completions.create(
     model="gpt-4-1106-preview",
     response_format={ "type": "json_object" },
-    messages= chatVerlauf_Information
+    messages= st.session_state.chatVerlauf_Information
     )
-    JSON_Data =  chat_Filter.choices[0].message.content
-    chatVerlauf_Information.append({"role": "assistant", "content": JSON_Data}),
-    #print(JSON_Data)
-    filtered_DF = setDataAndFilterWithJSON(JSON_Data)
+    jsondata =  chat_Filter.choices[0].message.content
+    st.session_state.chatVerlauf_Information.append({"role": "assistant", "content": jsondata})
+    print(jsondata)
+    filtered_DF = setDataAndFilterWithJSON(jsondata)
+    print(filtered_DF)
     #print(filtered_DF)
     lengthOfFilteredDatabase = filtered_DF.shape[0]
     #print(lengthOfFilteredDatabase)
     chatVerlauf_UserInteraction=[{
     "role": "system",
         "content": f"You are a polite and helpful assistant who should help the user find the right shoesv out of a database." 
-                   f" For your first Messager you have none of the following Informations."  "You get a JSON file {JSON_Data} with the following variables Color, Shoe Type, Gender, Season and Material."
+                   f"You get a JSON file {jsondata} with the following variables Color, Shoe Type, Gender, Season and Material."
                    f" These are filters with which you want to help the user to find the right shoe for the customer." 
                    f" If a variable could not yet be recognized from the User_Input, there is a '' in the JSON file." 
                    f" If this is the case, explicitly ask the user again for the filter." 
                    f" You should mention the current amount of the filtered shoes matching to the User Input, given with this variable {lengthOfFilteredDatabase}." 
                    f" Mention {lengthOfFilteredDatabase} in the Answer. If {lengthOfFilteredDatabase} is greater than 10 then ask again for more information." 
-                   f" But if {lengthOfFilteredDatabase} <= then give a description of the 10 filtered shoes."
-                   f" I will give you a pandas dataframe { filtered_DF} with which you can find the necessary information about the filtered shoes and describe those as deatiled as you can with the given Information to the User. "
+                   f" But if {lengthOfFilteredDatabase} <= 10 then give a description of the  filtered shoes in the dataframe{ filtered_DF}."
                    f"Please describe the shoes in a continuous text and not in embroidery dots. "
         }]
-    chatVerlauf_UserInteraction.append({"role": "user", "content": user_input}),
+    chatVerlauf_UserInteraction.append({"role": "user", "content": user_input})
     chat_User = client.chat.completions.create(
     model="gpt-4-1106-preview",
     messages=chatVerlauf_UserInteraction
     )
-    antwort_Message = chat_User.choices[0].message.content
-    chatVerlauf_UserInteraction.append({"role": "assistant", "content": antwort_Message}),
-    st.session_state['chat_history'].append(f"Berater: {antwort_Message}")
-
-
-
-
-
-
-
-
-
-
-
-
+    system_Message = chat_User.choices[0].message.content
+    chatVerlauf_UserInteraction.append({"role": "assistant", "content": system_Message})
+    print(system_Message)
+    full_response = system_Message
+    message_placeholder.markdown(full_response)
+    # Add assistant response to chat history
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
+   
 
 
 
