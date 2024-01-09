@@ -9,9 +9,6 @@ import re
 import json
 
 
-API_KEY = os.environ["API_KEY"]
-
-openai_api_key = API_KEY
 
 file_path = 'Rieker_SUMMERANDWINTER_DATA.xlsx'
 
