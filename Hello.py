@@ -1,21 +1,15 @@
 import streamlit as st
-from openai import OpenAI
-import os
+import openai
 
-API_KEY = os.environ["API_KEY"]
-
-
+# Assuming you have set up st.secrets correctly
+openai.api_key = st.secrets["openai_api_key"]
 
 input = st.text_input("Ask a question")
 
-
 if st.button("Submit"):
-    client = OpenAI(
-    api_key= API_KEY
-    )
-    chat_completion = client.chat.completions.create(
-         model="gpt-4-1106-preview",
+    chat_completion = openai.ChatCompletion.create(
+        model="gpt-4-1106-preview",
         messages=[{"role": "user", "content": input}]
-        )
+    )
 
     st.write(chat_completion.choices[0].message.content)
