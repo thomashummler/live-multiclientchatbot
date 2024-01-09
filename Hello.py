@@ -89,9 +89,7 @@ def filter_rieker_database(color, shoe_type, gender, season, material):
 
 
 
-client = OpenAI(
-    api_key= openai_api_key
-)
+
 if 'chatVerlauf_Information' not in st.session_state:
     st.session_state.chatVerlauf_Information = []
     st.session_state.chatVerlauf_Information=[{
