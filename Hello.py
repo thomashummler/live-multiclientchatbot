@@ -169,8 +169,10 @@ if prompt := st.chat_input("What is up?"):
     #print(filtered_DF)
     lengthOfFilteredDatabase = filtered_DF.shape[0]
     #print(lengthOfFilteredDatabase)
-    chatVerlauf_UserInteraction=[{
-    "role": "system",
+    if 'chatVerlauf_UserInteraction' not in st.session_state:
+        st.session_state.chatVerlauf_UserInteraction = []
+        st.session_state.chatVerlauf_UserInteraction.append({
+        "role": "system",
         "content": f"You are a polite and helpful assistant who should help the user find the right shoesv out of a database." 
                    f"You get a JSON file {jsondata} with the following variables Color, Shoe Type, Gender, Season and Material."
                    f" These are filters with which you want to help the user to find the right shoe for the customer." 
@@ -180,19 +182,19 @@ if prompt := st.chat_input("What is up?"):
                    f" Mention {lengthOfFilteredDatabase} in the Answer. If {lengthOfFilteredDatabase} is greater than 10 then ask again for more information." 
                    f" But if {lengthOfFilteredDatabase} <= 10 then give a description of the  filtered shoes in the dataframe{ filtered_DF}."
                    f"Please describe the shoes in a continuous text and not in embroidery dots. "
-        }]
-    chatVerlauf_UserInteraction.append({"role": "user", "content": user_input})
+         })
+    st.session_state.chatVerlauf_UserInteraction.append({"role": "user", "content": user_input})
     chat_User = openai.ChatCompletion.create(
     model="gpt-4-1106-preview",
     messages=chatVerlauf_UserInteraction
     )
     system_Message = chat_User.choices[0].message.content
-    chatVerlauf_UserInteraction.append({"role": "assistant", "content": system_Message})
+    st.session_state.chatVerlauf_UserInteraction.append({"role": "assistant", "content": system_Message})
     print(system_Message)
     full_response = system_Message
     message_placeholder.markdown(full_response)
     # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": full_response})
+    st.session_state.messages.append({"role": "assistant", "content": full_response}) 
    
 
 
