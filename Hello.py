@@ -1,15 +1,16 @@
-from altair import JsonDataFormat
+
 import streamlit as st
-import random
-import time
 import os
 import pandas as pd
 import numpy as np
 import re
 import json
-import openai 
+from openai import OpenAI
+
 
 openai.api_key = os.environ["API_KEY"]
+
+openai_api_key = API_KEY
 
 file_path = 'Rieker_SUMMERANDWINTER_DATA.xlsx'
 
@@ -115,13 +116,13 @@ if 'chatVerlauf_Information' not in st.session_state:
 
 
 
-chatVerlauf_UserInteraction_start=[{
+chatVerlauf_UserInteraction=[{
         "role": "system",
            "content": f"You are a polite and helpful assistant who should help the user find the right shoes out of a Shoes Database.That's why you greet the user first and ask how you can help them.  "
         }]
-chat_User = openai.ChatCompletion.create(
+chat_User = client.chat.completions.create(
          model="gpt-4-1106-preview",
-         messages=chatVerlauf_UserInteraction_start
+         messages=chatVerlauf_UserInteraction
         )
 start_Message_System = chat_User.choices[0].message.content
 
@@ -177,12 +178,11 @@ if prompt := st.chat_input("What is up?"):
                    f"You get a JSON file {jsondata} with the following variables Color, Shoe Type, Gender, Season and Material."
                    f" These are filters with which you want to help the user to find the right shoe for the customer." 
                    f" If a variable could not yet be recognized from the User_Input, there is a '' in the JSON file." 
-                   f" If this is the case, explicitly ask the user again for this filters and not it they are already set."
-                   f" Yout get the variable {lengthOfFilteredDatabase} which is telling to you how many shoes are matching to the set filters. Please mention them in your answer" 
-                   f" If {lengthOfFilteredDatabase} is less than 5 then give a descripton of every shoe to the customer out of {filtered_DF}" 
-                   f" Please describe the shoes in a continuous text and not in embroidery dots. "
-                   f" If {lengthOfFilteredDatabase} is greater than 5 then u should only give detailed Informations about the shoes in {filtered_DF} if the currently filtered best fitting shoes " 
-                   f" If the User does so pick the 2 best fitting Shoes" 
+                   f" If this is the case, explicitly ask the user again for this filters."
+                   f" You also have to mention how many shoes are already filtered. The current amount is {lengthOfFilteredDatabase} <= 5 them give a deailted descripton about each shoe in {filtered_DF}."
+                   f" These are the currently filtered shoe : {filtered_DF}." 
+                   f" Please describe the shoes in a continuous text and not in embroidery dots. " 
+                   f" If tells u to give to him the currently best fitting shoes, choose two shoes out of {filtered_DF} that are best fitting to the User Input" 
     })
     st.session_state.chatVerlauf_UserInteraction.append({"role": "user", "content": user_input})
     chat_User = openai.ChatCompletion.create(
@@ -191,12 +191,13 @@ if prompt := st.chat_input("What is up?"):
     )
     system_Message = chat_User.choices[0].message.content
     st.session_state.chatVerlauf_UserInteraction.append({"role": "assistant", "content": system_Message})
-   
     full_response = system_Message
     message_placeholder.markdown(full_response)
     # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": full_response}) 
-   
+    st.session_state.messages.append({"role": "assistant", "content": full_response})
+    print(st.session_state.chatVerlauf_UserInteraction)
+    
+
 
 
 
