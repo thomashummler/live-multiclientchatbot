@@ -5,12 +5,10 @@ import pandas as pd
 import numpy as np
 import re
 import json
-from openai import OpenAI
+import openai
 
 
 openai.api_key = os.environ["API_KEY"]
-
-openai_api_key = API_KEY
 
 file_path = 'Rieker_SUMMERANDWINTER_DATA.xlsx'
 
