@@ -128,7 +128,7 @@ start_Message_System = chat_User.choices[0].message.content
 
 
 
-st.title("Chatbot 1")
+st.title("Chatbot")
 
 # Initialize chat history
 if "messages" not in st.session_state:
