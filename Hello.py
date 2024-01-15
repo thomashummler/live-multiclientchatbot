@@ -5,9 +5,9 @@ import pandas as pd
 import numpy as np
 import re
 import json
-import openai
+from openai import OpenAI
 
-openai.api_key = os.environ["API_KEY"]
+API_KEY = os.environ["API_KEY"]
 
 file_path = 'Rieker_SUMMERANDWINTER_DATA.xlsx'
 
@@ -111,13 +111,15 @@ if 'chatVerlauf_Information' not in st.session_state:
     }]
 
 
-
+client = OpenAI(
+    api_key= API_KEY
+)
 
 chatVerlauf_UserInteraction=[{
         "role": "system",
            "content": f"You are a polite and helpful assistant who should help the user find the right shoes out of a Shoes Database.That's why you greet the user first and ask how you can help them.  "
         }]
-chat_User = openai.ChatCompletion.create(
+chat_User = client.chat.completions.create(
          model="gpt-4-1106-preview",
          messages=chatVerlauf_UserInteraction
         )
