@@ -156,7 +156,7 @@ if prompt := st.chat_input("What is up?"):
 
     user_input = prompt
     st.session_state.chatVerlauf_Information.append({"role": "user", "content": user_input})
-    chat_Filter = openai.ChatCompletion.create(
+    chat_Filter = client.chat.completions.create(
     model="gpt-4-1106-preview",
     response_format={ "type": "json_object" },
     messages= st.session_state.chatVerlauf_Information
@@ -184,7 +184,7 @@ if prompt := st.chat_input("What is up?"):
                    f" If tells u to give to him the currently best fitting shoes, choose two shoes out of {filtered_DF} that are best fitting to the User Input" 
     })
     st.session_state.chatVerlauf_UserInteraction.append({"role": "user", "content": user_input})
-    chat_User = openai.ChatCompletion.create(
+    chat_User = client.chat.completions.create(
     model="gpt-4-1106-preview",
     messages=st.session_state.chatVerlauf_UserInteraction
     )
