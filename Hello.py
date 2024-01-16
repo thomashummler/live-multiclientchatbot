@@ -174,6 +174,8 @@ if prompt := st.chat_input("What is up?"):
         st.session_state.chatVerlauf_UserInteraction.append({
         "role": "system",
         "content": f"You are a polite and helpful assistant who should help the user find the right shoesv out of a database." 
+                   f"If the User is trying is asking about something else than soes then explain to him that your purpose is it to find the right shoes. "
+                   f"After every User Input the RAG Pipeline is getting started again ist retrieving to you a new List of new Documents"
                    f"You get a JSON file {jsondata} with the following variables Color, Shoe Type, Gender, Season and Material."
                    f" These are filters with which you want to help the user to find the right shoe for the customer." 
                    f" If a variable could not yet be recognized from the User_Input, there is a '' in the JSON file." 

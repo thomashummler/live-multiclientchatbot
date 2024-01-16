@@ -147,7 +147,9 @@ if prompt := st.chat_input("Hallo, wie kann ich dir weiterhelfen?"):
         st.session_state.chatVerlauf_UserInteraction = []
         st.session_state.chatVerlauf_UserInteraction.append({
         "role": "system",
-           "content": f"You are a polite, courteous and helpful assistant who should help the user find the right shoes.." 
+           "content": f"You are a polite, courteous and helpful assistant who should help the user find the right shoes." 
+                      f"If the User is trying is asking about something else than soes then explain to him that your purpose is it to find the right shoes. "
+                      f"After every User Input the RAG Pipeline is getting started again ist retrieving to you a new List of new Documents"           
                       f"You are getting passed a list of {documents} which contain Documents of retrieved shoes mit by a Hybrid Retrieval RAG Pipeline from Haystack."
                       f"After every User Input the RAG Pipeline is getting started again ist retrieving to you a new List of new Documents"
                       f"You should check if the Informations in the documents match with the Informations that the User gave to you in the query and describe the shoes in a continuous text and not in embroidery dots for those Documents, who contain details about a shoe, who fit to the User Query "
